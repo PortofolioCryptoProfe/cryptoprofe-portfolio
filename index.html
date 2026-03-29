@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoProfe — Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --bg-card-hover: #1e1e1e;
+            --border: #282828;
+            --text-primary: #f0f0f0;
+            --text-secondary: #888888;
+            --green: #00e676;
+            --green-dim: #00c060;
+            --green-bg: rgba(0, 230, 118, 0.08);
+            --red: #ff4466;
+            --red-dim: #cc2244;
+            --red-bg: rgba(255, 68, 102, 0.08);
+            --accent: #FF6B35;
+            --accent-dim: #e05520;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+        }
+
+        .header-left h1 span { color: var(--text-primary); font-weight: 300; }
+
+        .header-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+
+        .stat { text-align: right; }
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value { font-size: 16px; font-weight: 600; }
+        .stat-value.gold { color: var(--accent); }
+
+        .last-update { font-size: 11px; color: var(--text-secondary); }
+
+        .countdown {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .countdown-bar {
+            width: 44px; height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .countdown-fill {
+            height: 100%;
+            background: var(--green);
+            transition: width 1s linear;
+            border-radius: 2px;
+        }
+
+        /* ── LAYOUT ── */
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+        /* ── STATUS BAR ── */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .dot.green  { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+        .dot.red    { background: var(--red); }
+        .dot.yellow { background: var(--accent); animation: pulse 1.5s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
+
+        /* ── CONFIG BOX ── */
+        .config-section {
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .config-section h3 {
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .config-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .config-input {
+            flex: 1;
+            min-width: 280px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 9px 12px;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+        }
+        .config-input:focus { outline: none; border-color: var(--accent); }
+        .config-hint {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .config-hint strong { color: var(--accent); }
+
+        .btn {
+            padding: 9px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-gold { background: var(--accent); color: #fff; }
+        .btn-gold:hover { background: var(--accent-dim); }
+
+        /* ── ERROR ── */
+        .error-msg {
+            background: rgba(255, 68, 102, 0.1);
+            border: 1px solid rgba(255, 68, 102, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--red);
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-title { font-size: 13px; font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        /* ── TABLE ── */
+        .table-wrapper { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th {
+            padding: 11px 16px;
+            text-align: right;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        th:first-child { text-align: left; }
+
+        td {
+            padding: 12px 16px;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        td:first-child { text-align: left; }
+        tr:last-child td { border-bottom: none; }
+
+        tr.positive { background: rgba(0, 255, 136, 0.025); }
+        tr.negative { background: rgba(255, 68, 102, 0.025); }
+        tr:hover td { background: var(--bg-card-hover); }
+
+        .asset-name  { font-weight: 600; color: var(--text-primary); }
+        .asset-id    { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+        .price-entry { color: var(--text-secondary); }
+
+        .pnl-positive { color: var(--green); font-weight: 600; }
+        .pnl-negative { color: var(--red);   font-weight: 600; }
+        .pnl-neutral  { color: var(--text-secondary); }
+
+        .pct-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .pct-positive { background: var(--green-bg); color: var(--green); }
+        .pct-negative { background: var(--red-bg);   color: var(--red); }
+
+        .alloc-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: rgba(255, 107, 53, 0.12);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* ── CHARTS ── */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .chart-body       { padding: 20px; height: 320px; position: relative; }
+        .chart-body-pie   { padding: 20px; height: 320px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .chart-body-line  { padding: 20px; height: 360px; position: relative; }
+
+        /* ── SUMMARY BAR ── */
+        .summary-bar {
+            display: flex;
+            gap: 20px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-secondary);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .summary-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+        .summary-label { color: var(--text-secondary); }
+        .summary-value { font-weight: 700; }
+
+        /* ── EMPTY STATE ── */
+        .empty-cell {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .header { padding: 14px 16px; }
+            .container { padding: 14px; }
+            .header-stats { gap: 14px; }
+            .config-input { min-width: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════ -->
+<header class="header">
+    <div class="header-left">
+        <h1>CryptoProfe <span>— Portfolio</span></h1>
+    </div>
+    <div class="header-stats">
+        <div class="stat">
+            <div class="stat-label">Capital Inicial</div>
+            <div class="stat-value gold" id="capital-display">—</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">P&L Total</div>
+            <div class="stat-value" id="total-pnl-display">—</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Actualizado</div>
+            <div class="last-update" id="last-update">—</div>
+            <div class="countdown">
+                <span id="countdown-text">60s</span>
+                <div class="countdown-bar">
+                    <div class="countdown-fill" id="countdown-fill" style="width:100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════════════ -->
+<main class="container">
+
+    <!-- Config -->
+    <div class="config-section">
+        <h3>⚙ Configuración — Google Sheet ID</h3>
+        <div class="config-row">
+            <input  type="text"
+                    class="config-input"
+                    id="sheet-id-input"
+                    placeholder="Pega aquí el ID de tu Google Sheet (ej: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms)">
+            <button class="btn btn-gold" onclick="loadWithId()">Cargar Portfolio</button>
+        </div>
+        <p class="config-hint">
+            El ID está en la URL de tu Sheet:
+            docs.google.com/spreadsheets/d/<strong>ESTE_ES_EL_ID</strong>/edit
+            &nbsp;·&nbsp; También puedes pegar la URL completa.
+        </p>
+    </div>
+
+    <!-- Status -->
+    <div class="status-bar" id="status-bar">
+        <div class="dot yellow" id="status-dot"></div>
+        <span id="status-text">Esperando Sheet ID para cargar datos…</span>
+    </div>
+
+    <!-- Error -->
+    <div id="error-container"></div>
+
+    <!-- ── TABLE ── -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Posiciones Actuales</span>
+            <span class="card-badge" id="positions-count">0 activos</span>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Activo</th>
+                        <th>Precio Actual</th>
+                        <th>Precio Entrada</th>
+                        <th>P&L %</th>
+                        <th>P&L $</th>
+                        <th>Posible Entrada 1</th>
+                        <th>Posible Entrada 2</th>
+                        <th>% Portafolio</th>
+                    </tr>
+                </thead>
+                <tbody id="portfolio-tbody">
+                    <tr>
+                        <td colspan="8" class="empty-cell">
+                            Ingresa tu Sheet ID arriba para cargar el portafolio
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── CHARTS (pie + bar) ── -->
+    <div class="charts-grid">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Distribución del Portafolio</span>
+            </div>
+            <div class="chart-body-pie">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">P&L por Activo (%)</span>
+            </div>
+            <div class="chart-body">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── LINE CHART ── -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Portafolio vs Bitcoin — Histórico Semanal</span>
+        </div>
+        <div class="chart-body-line">
+            <canvas id="lineChart"></canvas>
+        </div>
+        <div class="summary-bar" id="weekly-summary" style="display:none">
+            <div class="summary-item">
+                <span class="summary-label">Última semana —</span>
+                <span class="summary-label">Portafolio:</span>
+                <span class="summary-value" id="last-portfolio-week">—</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">BTC:</span>
+                <span class="summary-value" id="last-btc-week">—</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-label">Diferencia:</span>
+                <span class="summary-value" id="last-diff-week">—</span>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ────────────────────────────────────────────────
+// CONFIG
+// ────────────────────────────────────────────────
+const COINGECKO_API    = 'https://api.coingecko.com/api/v3/simple/price';
+const REFRESH_INTERVAL = 60; // seconds
+
+let SHEET_ID        = '';
+let portfolioData   = [];
+let historialData   = [];
+let currentPrices   = {};
+let capitalInicial  = null;
+
+let pieChartInst    = null;
+let barChartInst    = null;
+let lineChartInst   = null;
+let countdownTimer  = null;
+let secondsLeft     = REFRESH_INTERVAL;
+
+// ────────────────────────────────────────────────
+// UTILS
+// ────────────────────────────────────────────────
+function formatUSD(n) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    const abs = Math.abs(n);
+    const decimals = abs >= 1000 ? 2 : abs >= 1 ? 2 : 6;
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+function formatPct(n) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+}
+
+function pnlClass(n)    { return n > 0 ? 'pnl-positive' : n < 0 ? 'pnl-negative' : 'pnl-neutral'; }
+function badgeClass(n)  { return n >= 0 ? 'pct-positive' : 'pct-negative'; }
+
+function timestamp() {
+    return new Date().toLocaleString('es-ES', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+}
+
+function setStatus(text, type = '') {
+    document.getElementById('status-dot').className  = 'dot ' + type;
+    document.getElementById('status-text').textContent = text;
+}
+
+function showError(msg) {
+    document.getElementById('error-container').innerHTML =
+        `<div class="error-msg">⚠ ${msg}</div>`;
+}
+
+function clearError() {
+    document.getElementById('error-container').innerHTML = '';
+}
+
+// ────────────────────────────────────────────────
+// GOOGLE SHEETS
+// ────────────────────────────────────────────────
+async function fetchSheet(sheetName) {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} al leer "${sheetName}"`);
+    const text = await res.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);\s*$/);
+    if (!match) throw new Error('Respuesta inesperada del Sheet. ¿Está publicado en la web?');
+    return JSON.parse(match[1]);
+}
+
+function cellVal(cells, idx) {
+    return cells[idx]?.v ?? null;
+}
+
+function parsePortfolio(data) {
+    const rows    = data.table?.rows || [];
+    const result  = [];
+    let capital   = null;
+
+    rows.forEach((row, i) => {
+        const c   = row.c || [];
+        const get = idx => cellVal(c, idx);
+
+        // Capital inicial: col G (idx 6), first data row only
+        if (i === 0 && get(6) !== null) {
+            capital = parseFloat(get(6));
+        }
+
+        const ticker = get(0);
+        if (!ticker) return;
+
+        result.push({
+            ticker:        String(ticker).trim(),
+            coinId:        get(1) ? String(get(1)).trim().toLowerCase() : null,
+            precioEntrada: get(2) !== null ? parseFloat(get(2)) : null,
+            entrada1:      get(3) !== null ? parseFloat(get(3)) : null,
+            entrada2:      get(4) !== null ? parseFloat(get(4)) : null,
+            pct:           get(5) !== null ? parseFloat(get(5)) : null,
+        });
+    });
+
+    return { positions: result, capital };
+}
+
+function parseHistorial(data) {
+    return (data.table?.rows || []).map(row => {
+        const c   = row.c || [];
+        const get = idx => cellVal(c, idx);
+        return {
+            semana:       get(0) ? String(get(0)).trim() : null,
+            rendPortfolio: get(1) !== null ? parseFloat(get(1)) : null,
+            rendBTC:       get(2) !== null ? parseFloat(get(2)) : null,
+        };
+    }).filter(r => r.semana);
+}
+
+// ────────────────────────────────────────────────
+// COINGECKO
+// ────────────────────────────────────────────────
+async function fetchPrices(coinIds) {
+    if (!coinIds.length) return {};
+    const url = `${COINGECKO_API}?ids=${coinIds.join(',')}&vs_currencies=usd`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`);
+    return res.json();
+}
+
+// ────────────────────────────────────────────────
+// RENDER — TABLE
+// ────────────────────────────────────────────────
+function renderTable(positions, prices, capital) {
+    const tbody = document.getElementById('portfolio-tbody');
+
+    if (!positions.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-cell">No hay datos en la pestaña "Portafolio"</td></tr>`;
+        return;
+    }
+
+    document.getElementById('positions-count').textContent = `${positions.length} activos`;
+
+    let totalPnlUSD = 0;
+
+    const html = positions.map(p => {
+        const price     = p.coinId && prices[p.coinId]?.usd ? prices[p.coinId].usd : null;
+        const pnlPct    = (price !== null && p.precioEntrada) ? (price - p.precioEntrada) / p.precioEntrada * 100 : null;
+        const allocated = (capital && p.pct) ? capital * (p.pct / 100) : null;
+        const pnlUSD    = (pnlPct !== null && allocated) ? allocated * (pnlPct / 100) : null;
+
+        if (pnlUSD !== null) totalPnlUSD += pnlUSD;
+
+        const rowCls = pnlPct !== null ? (pnlPct >= 0 ? 'positive' : 'negative') : '';
+        const priceCell = price !== null
+            ? `<strong>${formatUSD(price)}</strong>`
+            : `<span style="color:var(--text-secondary);font-style:italic">cargando…</span>`;
+
+        return `
+        <tr class="${rowCls}">
+            <td>
+                <div class="asset-name">${p.ticker}</div>
+                ${p.coinId ? `<div class="asset-id">${p.coinId}</div>` : ''}
+            </td>
+            <td>${priceCell}</td>
+            <td class="price-entry">${p.precioEntrada !== null ? formatUSD(p.precioEntrada) : '—'}</td>
+            <td>${pnlPct !== null ? `<span class="pct-badge ${badgeClass(pnlPct)}">${formatPct(pnlPct)}</span>` : '—'}</td>
+            <td class="${pnlUSD !== null ? pnlClass(pnlUSD) : ''}">${pnlUSD !== null ? (pnlUSD >= 0 ? '+' : '') + formatUSD(pnlUSD) : '—'}</td>
+            <td style="color:var(--text-secondary)">${p.entrada1 !== null ? formatUSD(p.entrada1) : '—'}</td>
+            <td style="color:var(--text-secondary)">${p.entrada2 !== null ? formatUSD(p.entrada2) : '—'}</td>
+            <td>${p.pct !== null ? `<span class="alloc-badge">${p.pct}%</span>` : '—'}</td>
+        </tr>`;
+    }).join('');
+
+    tbody.innerHTML = html;
+
+    // P&L total in header
+    if (capital) {
+        const totalPct = totalPnlUSD / capital * 100;
+        const el = document.getElementById('total-pnl-display');
+        el.textContent  = `${formatPct(totalPct)}  (${totalPnlUSD >= 0 ? '+' : ''}${formatUSD(totalPnlUSD)})`;
+        el.className    = 'stat-value ' + pnlClass(totalPnlUSD);
+    }
+}
+
+// ────────────────────────────────────────────────
+// RENDER — CHARTS
+// ────────────────────────────────────────────────
+Chart.defaults.color            = '#8888a8';
+Chart.defaults.font.family      = 'Inter';
+Chart.defaults.font.size        = 12;
+
+const PALETTE = [
+    '#FF6B35','#00e676','#4488ff','#ff4466',
+    '#aa44ff','#ff8844','#44ffdd','#ff44aa','#88ff44','#6644ff'
+];
+
+function renderPieChart(positions) {
+    const data = positions.filter(p => p.pct !== null);
+    if (!data.length) return;
+
+    if (pieChartInst) pieChartInst.destroy();
+    pieChartInst = new Chart(document.getElementById('pieChart'), {
+        type: 'doughnut',
+        data: {
+            labels:   data.map(p => p.ticker),
+            datasets: [{
+                data:            data.map(p => p.pct),
+                backgroundColor: PALETTE.slice(0, data.length),
+                borderColor:     '#16161f',
+                borderWidth:     2,
+                hoverOffset:     8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: { padding: 16, color: '#e8e8f0', font: { size: 12 } }
+                },
+                tooltip: {
+                    callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}%` }
+                }
+            }
+        }
+    });
+}
+
+function renderBarChart(positions, prices) {
+    const data = positions.filter(p => p.coinId && prices[p.coinId]?.usd && p.precioEntrada);
+    if (!data.length) return;
+
+    const values = data.map(p =>
+        (prices[p.coinId].usd - p.precioEntrada) / p.precioEntrada * 100
+    );
+
+    if (barChartInst) barChartInst.destroy();
+    barChartInst = new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+            labels: data.map(p => p.ticker),
+            datasets: [{
+                label: 'P&L %',
+                data:            values,
+                backgroundColor: values.map(v => v >= 0 ? 'rgba(0,255,136,0.65)' : 'rgba(255,68,102,0.65)'),
+                borderColor:     values.map(v => v >= 0 ? '#00ff88' : '#ff4466'),
+                borderWidth:     1,
+                borderRadius:    4,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive:          true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: { label: ctx => ` ${ctx.parsed.x >= 0 ? '+' : ''}${ctx.parsed.x.toFixed(2)}%` }
+                }
+            },
+            scales: {
+                x: {
+                    grid:  { color: '#2a2a3a' },
+                    ticks: { callback: v => v + '%', color: '#8888a8' }
+                },
+                y: {
+                    grid:  { display: false },
+                    ticks: { color: '#e8e8f0', font: { weight: '600' } }
+                }
+            }
+        }
+    });
+}
+
+function renderLineChart(historial) {
+    if (!historial.length) return;
+
+    if (lineChartInst) lineChartInst.destroy();
+    lineChartInst = new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: {
+            labels: historial.map(h => h.semana),
+            datasets: [
+                {
+                    label:           'Portafolio',
+                    data:            historial.map(h => h.rendPortfolio),
+                    borderColor:     '#00ff88',
+                    backgroundColor: 'rgba(0,255,136,0.07)',
+                    borderWidth:     2.5,
+                    pointBackgroundColor: '#00ff88',
+                    pointRadius:     4,
+                    tension:         0.3,
+                    fill:            true,
+                },
+                {
+                    label:           'Bitcoin (BTC)',
+                    data:            historial.map(h => h.rendBTC),
+                    borderColor:     '#FF6B35',
+                    backgroundColor: 'rgba(255,107,53,0.07)',
+                    borderWidth:     2.5,
+                    pointBackgroundColor: '#FF6B35',
+                    pointRadius:     4,
+                    tension:         0.3,
+                    fill:            true,
+                }
+            ]
+        },
+        options: {
+            responsive:          true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#e8e8f0', padding: 20, font: { size: 13 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx =>
+                            ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? formatPct(ctx.parsed.y) : '—'}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid:  { color: '#2a2a3a' },
+                    ticks: { color: '#8888a8' }
+                },
+                y: {
+                    grid:  { color: '#2a2a3a' },
+                    ticks: { callback: v => v + '%', color: '#8888a8' }
+                }
+            }
+        }
+    });
+
+    // Summary below chart
+    const last = historial[historial.length - 1];
+    if (last && (last.rendPortfolio !== null || last.rendBTC !== null)) {
+        const diff = (last.rendPortfolio ?? 0) - (last.rendBTC ?? 0);
+
+        const setPnl = (id, val) => {
+            const el = document.getElementById(id);
+            el.textContent = formatPct(val);
+            el.className   = 'summary-value ' + pnlClass(val);
+        };
+
+        setPnl('last-portfolio-week', last.rendPortfolio);
+        setPnl('last-btc-week',       last.rendBTC);
+        setPnl('last-diff-week',      diff);
+        document.getElementById('weekly-summary').style.display = 'flex';
+    }
+}
+
+// ────────────────────────────────────────────────
+// CORE LOAD
+// ────────────────────────────────────────────────
+async function loadData() {
+    if (!SHEET_ID) return;
+    clearError();
+    setStatus('Cargando datos del Sheet…', 'yellow');
+
+    try {
+        // Portfolio sheet
+        const portfolioSheet = await fetchSheet('Portafolio');
+        const parsed = parsePortfolio(portfolioSheet);
+        portfolioData  = parsed.positions;
+        capitalInicial = parsed.capital;
+
+        if (capitalInicial !== null) {
+            document.getElementById('capital-display').textContent = formatUSD(capitalInicial);
+        }
+
+        // Historial sheet (optional — don't fail if missing)
+        try {
+            const historialSheet = await fetchSheet('Historial');
+            historialData = parseHistorial(historialSheet);
+            renderLineChart(historialData);
+        } catch (e) {
+            console.warn('Historial no disponible:', e.message);
+        }
+
+        // Prices
+        setStatus('Obteniendo precios en tiempo real…', 'yellow');
+        const coinIds = portfolioData.map(p => p.coinId).filter(Boolean);
+        try {
+            currentPrices = await fetchPrices(coinIds);
+        } catch (e) {
+            showError('No se pudieron obtener precios de CoinGecko. Los P&L no se mostrarán hasta el próximo refresh.');
+            currentPrices = {};
+        }
+
+        // Render
+        renderTable(portfolioData, currentPrices, capitalInicial);
+        renderPieChart(portfolioData);
+        renderBarChart(portfolioData, currentPrices);
+
+        document.getElementById('last-update').textContent = timestamp();
+        setStatus(`Actualizado — ${portfolioData.length} activos cargados`, 'green');
+
+    } catch (e) {
+        console.error(e);
+        showError(
+            `Error al leer el Sheet: ${e.message}. ` +
+            `Asegúrate de haber publicado el Sheet en la web ` +
+            `(Archivo → Compartir → Publicar en la web → Toda la hoja).`
+        );
+        setStatus('Error al cargar datos', 'red');
+    }
+}
+
+async function refreshPrices() {
+    if (!portfolioData.length) return;
+    const coinIds = portfolioData.map(p => p.coinId).filter(Boolean);
+    try {
+        currentPrices = await fetchPrices(coinIds);
+        renderTable(portfolioData, currentPrices, capitalInicial);
+        renderBarChart(portfolioData, currentPrices);
+        document.getElementById('last-update').textContent = timestamp();
+        setStatus(`Precios actualizados — ${portfolioData.length} activos`, 'green');
+    } catch (e) {
+        console.warn('Error al refrescar precios:', e.message);
+    }
+}
+
+// ────────────────────────────────────────────────
+// COUNTDOWN
+// ────────────────────────────────────────────────
+function startCountdown() {
+    if (countdownTimer) clearInterval(countdownTimer);
+    secondsLeft = REFRESH_INTERVAL;
+
+    countdownTimer = setInterval(() => {
+        secondsLeft--;
+        document.getElementById('countdown-text').textContent  = secondsLeft + 's';
+        document.getElementById('countdown-fill').style.width  = (secondsLeft / REFRESH_INTERVAL * 100) + '%';
+        if (secondsLeft <= 0) {
+            secondsLeft = REFRESH_INTERVAL;
+            refreshPrices();
+        }
+    }, 1000);
+}
+
+// ────────────────────────────────────────────────
+// ENTRY POINTS
+// ────────────────────────────────────────────────
+function loadWithId() {
+    const raw = document.getElementById('sheet-id-input').value.trim();
+    if (!raw) { showError('Por favor ingresa el ID de tu Google Sheet.'); return; }
+
+    // Accept full URL or bare ID
+    const urlMatch = raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+    SHEET_ID = urlMatch ? urlMatch[1] : raw;
+    localStorage.setItem('criptoprofe_sheet_id', SHEET_ID);
+
+    loadData().then(startCountdown);
+}
+
+// Restore saved ID on page load
+window.addEventListener('DOMContentLoaded', () => {
+    const DEFAULT_SHEET_ID = '1iLxy-ajHdynO37ZHNxzmVCe86WLDPUg7twO1yr8w4JM';
+    const saved = localStorage.getItem('criptoprofe_sheet_id') || DEFAULT_SHEET_ID;
+    if (saved) {
+        SHEET_ID = saved;
+        document.getElementById('sheet-id-input').value = saved;
+        loadData().then(startCountdown);
+    }
+});
+</script>
+</body>
+</html>
